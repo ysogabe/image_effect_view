@@ -1,0 +1,673 @@
+src:
+  structure.yaml:
+    content: |-
+      映画表現スタイルダッシュボード (Next.js, shadcn/ui, Vercel)
+      - 「映画表現 - スタイル」グリモワールの内容を紹介するダッシュボード
+      - 写実系/非写実系の階層構造でスタイルを分類・表示
+      - 各スタイルはカード形式で表示し、画像と説明を含む
+      - 画像は東京の夜景を各スタイルで表現したものを使用
+      - ユーザーは階層を選択してスタイルを探索できる
+      - Next.js (App Router), shadcn/ui を使用し、Vercelにデプロイ
+      agent選定理由: claude-3-5-sonnet-20241022は、Next.jsのプロジェクト構成、
+      Reactコンポーネントの作成、shadcn/uiの利用、JSONデータの扱い、
+      およびVercelデプロイ設定に優れているため。
+      ref: "映画表現 - スタイル - kzkk.rgb: ダッシュボードに表示するスタイル情報とその分類の参照元"
+    dependency:
+      - app/page.tsx
+      - app/layout.tsx
+      - components/ui/card.tsx
+      - components/style-grid.tsx
+      - lib/styles.ts
+      - public/images/tokyo_night_*.png
+      - package.json
+      - tsconfig.json
+      - postcss.config.js
+      - tailwind.config.js
+    agent: "claude-3-5-sonnet-20241022"
+    api: []
+
+  app:
+    page.tsx:
+      content: |-
+        import StyleGrid from '@/components/style-grid';
+        import { stylesData } from '@/lib/styles';
+
+        export default function Home() {
+          return (
+            <main className="container mx-auto p-4">
+              <h1 className="text-4xl font-bold mb-8">映画表現スタイル</h1>
+              <StyleGrid styles={stylesData} />
+            </main>
+          );
+        }
+      dependency:
+        - ../components/style-grid.tsx
+        - ../lib/styles.ts
+      agent: "claude-3-5-sonnet-20241022"
+      api: []
+
+    layout.tsx:
+      content: |-
+        import type { Metadata } from 'next';
+        import { Inter } from 'next/font/google';
+        import './globals.css';
+
+        const inter = Inter({ subsets: ['latin'] });
+
+        export const metadata: Metadata = {
+          title: '映画表現スタイル ダッシュボード',
+          description: '映画表現のスタイルを一覧表示するダッシュボード',
+        };
+
+        export default function RootLayout({
+          children,
+        }: {
+          children: React.ReactNode;
+        }) {
+          return (
+            <html lang="ja">
+              <body className={inter.className}>{children}</body>
+            </html>
+          );
+        }
+      dependency: []
+      agent: "claude-3-5-sonnet-20241022"
+      api: []
+    
+    globals.css:
+      content: "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
+      dependency: []
+      agent: "claude-3-5-sonnet-20241022"
+      api: []
+
+  components:
+    ui:
+      card.tsx:
+        content: |-
+          import { cn } from "@/lib/utils"
+
+          export function Card({
+            className,
+            children,
+          }: {
+            className?: string
+            children: React.ReactNode
+          }) {
+            return (
+              <div
+                className={cn(
+                  "rounded-lg border bg-card text-card-foreground shadow-sm",
+                  className
+                )}
+              >
+                {children}
+              </div>
+            )
+          }
+
+          export function CardHeader({
+            className,
+            children,
+          }: {
+            className?: string
+            children: React.ReactNode
+          }) {
+            return (
+              <div className={cn("flex flex-col space-y-1.5 p-6", className)}>
+                {children}
+              </div>
+            )
+          }
+
+          export function CardTitle({
+            className,
+            children,
+          }: {
+            className?: string
+            children: React.ReactNode
+          }) {
+            return (
+              <h3
+                className={cn(
+                  "text-2xl font-semibold leading-none tracking-tight",
+                  className
+                )}
+              >
+                {children}
+              </h3>
+            )
+          }
+
+          export function CardDescription({
+            className,
+            children,
+          }: {
+            className?: string
+            children: React.ReactNode
+          }) {
+            return (
+              <p
+                className={cn("text-sm text-muted-foreground", className)}
+              >
+                {children}
+              </p>
+            )
+          }
+          export function CardContent({
+            className,
+            children,
+          }: {
+            className?: string
+            children: React.ReactNode
+          }) {
+            return <div className={cn("p-6 pt-0", className)}>{children}</div>
+          }
+        dependency:
+          - ../../lib/utils.ts
+        agent: "claude-3-5-sonnet-20241022"
+        api: []
+
+    style-grid.tsx:
+      content: |-
+        import Image from 'next/image';
+        import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+
+        interface Style {
+          name: string;
+          image: string;
+          description: string;
+        }
+
+        interface StyleCategory {
+          [category: string]: {
+            [styleName: string]: Style;
+          };
+        }
+
+        interface StyleGridProps {
+          styles: StyleCategory;
+        }
+
+        export default function StyleGrid({ styles }: StyleGridProps) {
+          return (
+            <div>
+              {Object.entries(styles).map(([category, stylesInCategory]) => (
+                <div key={category} className="mb-8">
+                  <h2 className="text-3xl font-bold mb-4">{category}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(stylesInCategory).map(([styleName, style]) => (
+                      <Card key={styleName}>
+                        <CardHeader>
+                          <CardTitle>{style.name}</CardTitle>
+                          <CardDescription>{styleName}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="relative aspect-w-16 aspect-h-9">
+                            <Image
+                              src={style.image}
+                              alt={style.name}
+                              fill
+                              className="object-cover rounded-md"
+                            />
+                          </div>
+                          <p className="text-sm mt-2">{style.description}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+      dependency:
+        - ./ui/card.tsx
+      agent: "claude-3-5-sonnet-20241022"
+      api: []
+
+  lib:
+    styles.ts:
+      content: |-
+        export const stylesData = {
+          "写実系": {
+            "サイレント映画風": {
+              name: "サイレント映画風",
+              image: "/images/tokyo_night_silent.png",
+              description: "モノクロ、高コントラスト、強いグレイン、ビネット、フレーム揺れ。",
+            },
+            "初期テクニカラー風": {
+              name: "初期テクニカラー風",
+              image: "/images/tokyo_night_technicolor.png",
+              description: "限られた色数、高彩度、不自然な色合い、色にじみ、グレイン。",
+            },
+            "セピア調": {
+              name: "セピア調",
+              image: "/images/tokyo_night_sepia.png",
+              description: "セピア色、グレイン、ビネット、低コントラスト、色あせ。",
+            },
+            "ダゲレオタイプ風": {
+              name: "ダゲレオタイプ風",
+              image: "/images/tokyo_night_daguerreotype.png",
+              description: "モノクロ、鏡面反射、高解像度、独特の質感、ビネット、小傷。",
+            },
+            "8mmフィルム風": {
+              name: "8mmフィルム風",
+              image: "/images/tokyo_night_8mm.png",
+              description: "粒状感、色あせ、低彩度、フレーム揺れ、光漏れ、温かみ。",
+            },
+            "コダクローム風": {
+              name: "コダクローム風",
+              image: "/images/tokyo_night_kodachrome.png",
+              description: "鮮やか、高彩度、細かい粒子、わずかに青みがかったハイライト。",
+            },
+            "オートクローム風": {
+              name: "オートクローム風",
+              image: "/images/tokyo_night_autochrome.png",
+              description: "独特の点描、柔らかい色調、低コントラスト。",
+            },
+            "ティールアンドオレンジ": {
+              name: "ティールアンドオレンジ",
+              image: "/images/tokyo_night_teal_orange.png",
+              description: "補色、肌色強調。",
+            },
+            "ブリーチバイパス": {
+              name: "ブリーチバイパス",
+              image: "/images/tokyo_night_bleach_bypass.png",
+              description: "銀残し、コントラスト強調、彩度低減。",
+            },
+            "デイ・フォー・ナイト": {
+              name: "デイ・フォー・ナイト",
+              image: "/images/tokyo_night_day_for_night.png",
+              description: "昼間のシーンを夜のように見せる。",
+            },
+          },
+          "非写実系": {
+            "マトリックス風": {
+              name: "マトリックス風",
+              image: "/images/tokyo_night_matrix.png",
+              description: "緑がかった色調、デジタル感。",
+            },
+            "アメリ風": {
+              name: "アメリ風",
+              image: "/images/tokyo_night_amelie.png",
+              description: "赤、緑、黄色、温かみ、ノスタルジア。",
+            },
+            "マッドマックス風": {
+              name: "マッドマックス風",
+              image: "/images/tokyo_night_mad_max.png",
+              description: "オレンジと青の強いコントラスト、埃っぽい。",
+            },
+            "ブレードランナー風": {
+              name: "ブレードランナー風",
+              image: "/images/tokyo_night_blade_runner.png",
+              description: "ネオン、ダーク、サイバーパンク、雨、霧。",
+            },
+            "シン・シティ風": {
+              name: "シン・シティ風",
+              image: "/images/tokyo_night_sin_city.png",
+              description: "モノクロベース、部分的に強い色（赤）。",
+            },
+            "グランド・ブダペスト・ホテル風": {
+              name: "グランド・ブダペスト・ホテル風",
+              image: "/images/tokyo_night_grand_budapest.png",
+              description: "パステルカラー、左右対称の構図。",
+            },
+            "ネオンカラー": {
+              name: "ネオンカラー",
+              image: "/images/tokyo_night_neon.png",
+              description: "蛍光色、サイバーパンク、80年代風。",
+            },
+            "パステルカラー": {
+              name: "パステルカラー",
+              image: "/images/tokyo_night_pastel.png",
+              description: "淡い色、柔らかい、夢のような。",
+            },
+            "水彩画風": {
+              name: "水彩画風",
+              image: "/images/tokyo_night_watercolor.png",
+              description: "にじみ、ぼかし、淡い色彩。",
+            },
+            "油絵風": {
+              name: "油絵風",
+              image: "/images/tokyo_night_oil_painting.png",
+              description: "厚塗り、質感、筆致。",
+            },
+            "アニメ風": {
+              name: "アニメ風",
+              image: "/images/tokyo_night_anime.png",
+              description: "セル画風、輪郭線、影。",
+            },
+            "コミックブック風": {
+              name: "コミックブック風",
+              image: "/images/tokyo_night_comic.png",
+              description: "太い線、原色、ドット。",
+            },
+            "ドット絵風": {
+              name: "ドット絵風",
+              image: "/images/tokyo_night_pixel_art.png",
+              description: "低解像度、レトロ。",
+            },
+            "グリッチアート": {
+              name: "グリッチアート",
+              image: "/images/tokyo_night_glitch.png",
+              description: "デジタルノイズ、破損表現。",
+            },
+          },
+        };
+      dependency: []
+      agent: "claude-3-5-sonnet-20241022"
+      api: []
+    utils.ts:
+      content: |-
+        import { type ClassValue, clsx } from "clsx"
+        import { twMerge } from "tailwind-merge"
+
+        export function cn(...inputs: ClassValue[]) {
+          return twMerge(clsx(inputs))
+        }
+      dependency: []
+      agent: "claude-3-5-sonnet-20241022"
+      api: []
+
+  package.json:
+    content: |-
+      {
+        "name": "movie-style-dashboard",
+        "version": "0.1.0",
+        "private": true,
+        "scripts": {
+          "dev": "next dev",
+          "build": "next build",
+          "start": "next start",
+          "lint": "next lint"
+        },
+        "dependencies": {
+          "@radix-ui/react-slot": "^1.0.2",
+          "class-variance-authority": "^0.7.0",
+          "clsx": "^2.1.0",
+          "lucide-react": "^0.379.0",
+          "next": "14.2.3",
+          "react": "^18",
+          "react-dom": "^18",
+          "tailwind-merge": "^2.2.2",
+          "tailwindcss-animate": "^1.0.7"
+        },
+        "devDependencies": {
+          "@types/node": "^20",
+          "@types/react": "^18",
+          "@types/react-dom": "^18",
+          "autoprefixer": "^10.0.1",
+          "eslint": "^8",
+          "eslint-config-next": "14.2.3",
+          "postcss": "^8",
+          "tailwindcss": "^3.3.0",
+          "typescript": "^5"
+        }
+      }
+    dependency: []
+    agent: "claude-3-5-sonnet-20241022"
+    api: []
+
+  tsconfig.json:
+    content: |-
+      {
+        "compilerOptions": {
+          "target": "es5",
+          "lib": [
+            "dom",
+            "dom.iterable",
+            "esnext"
+          ],
+          "allowJs": true,
+          "skipLibCheck": true,
+          "strict": true,
+          "noEmit": true,
+          "esModuleInterop": true,
+          "module": "esnext",
+          "moduleResolution": "bundler",
+          "resolveJsonModule": true,
+          "isolatedModules": true,
+          "jsx": "preserve",
+          "incremental": true,
+          "plugins": [
+            {
+              "name": "next"
+            }
+          ],
+          "paths": {
+            "@/*": [
+              "./*"
+            ]
+          }
+        },
+        "include": [
+          "next-env.d.ts",
+          "**/*.ts",
+          "**/*.tsx",
+          ".next/types/**/*.ts"
+        ],
+        "exclude": [
+          "node_modules"
+        ]
+      }
+    dependency: []
+    agent: "claude-3-5-sonnet-20241022"
+    api: []
+
+  postcss.config.js:
+    content: |-
+      module.exports = {
+        plugins: {
+          tailwindcss: {},
+          autoprefixer: {},
+        },
+      }
+    dependency: []
+    agent: "claude-3-5-sonnet-20241022"
+    api: []
+
+  tailwind.config.js:
+    content: |-
+      /** @type {import('tailwindcss').Config} */
+      module.exports = {
+        darkMode: ["class"],
+        content: [
+          './pages/**/*.{ts,tsx}',
+          './components/**/*.{ts,tsx}',
+          './app/**/*.{ts,tsx}',
+          './src/**/*.{ts,tsx}',
+        ],
+        prefix: "",
+        theme: {
+          container: {
+            center: true,
+            padding: "2rem",
+            screens: {
+              "2xl": "1400px",
+            },
+          },
+          extend: {
+            colors: {
+              border: "hsl(var(--border))",
+              input: "hsl(var(--input))",
+              ring: "hsl(var(--ring))",
+              background: "hsl(var(--background))",
+              foreground: "hsl(var(--foreground))",
+              primary: {
+                DEFAULT: "hsl(var(--primary))",
+                foreground: "hsl(var(--primary-foreground))",
+              },
+              secondary: {
+                DEFAULT: "hsl(var(--secondary))",
+                foreground: "hsl(var(--secondary-foreground))",
+              },
+              destructive: {
+                DEFAULT: "hsl(var(--destructive))",
+                foreground: "hsl(var(--destructive-foreground))",
+              },
+              muted: {
+                DEFAULT: "hsl(var(--muted))",
+                foreground: "hsl(var(--muted-foreground))",
+              },
+              accent: {
+                DEFAULT: "hsl(var(--accent))",
+                foreground: "hsl(var(--accent-foreground))",
+              },
+              popover: {
+                DEFAULT: "hsl(var(--popover))",
+                foreground: "hsl(var(--popover-foreground))",
+              },
+              card: {
+                DEFAULT: "hsl(var(--card))",
+                foreground: "hsl(var(--card-foreground))",
+              },
+            },
+            borderRadius: {
+              lg: "var(--radius)",
+              md: "calc(var(--radius) - 2px)",
+              sm: "calc(var(--radius) - 4px)",
+            },
+            keyframes: {
+              "accordion-down": {
+                from: { height: "0" },
+                to: { height: "var(--radix-accordion-content-height)" },
+              },
+              "accordion-up": {
+                from: { height: "var(--radix-accordion-content-height)" },
+                to: { height: "0" },
+              },
+            },
+            animation: {
+              "accordion-down": "accordion-down 0.2s ease-out",
+              "accordion-up": "accordion-up 0.2s ease-out",
+            },
+          },
+        },
+        plugins: [require("tailwindcss-animate")],
+      }
+    dependency: []
+    agent: "claude-3-5-sonnet-20241022"
+    api: []
+
+  public:
+    images:
+      tokyo_night_silent.png:
+        content: "東京の夜景（サイレント映画風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_technicolor.png:
+        content: "東京の夜景（初期テクニカラー風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_sepia.png:
+        content: "東京の夜景（セピア調）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_daguerreotype.png:
+        content: "東京の夜景（ダゲレオタイプ風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_8mm.png:
+        content: "東京の夜景（8mmフィルム風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_kodachrome.png:
+        content: "東京の夜景 (コダクローム風)."
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_autochrome.png:
+        content: "東京の夜景 (オートクローム風)."
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_teal_orange.png:
+        content: "東京の夜景（ティールアンドオレンジ）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_bleach_bypass.png:
+        content: "東京の夜景（ブリーチバイパス）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_day_for_night.png:
+        content: "東京の夜景（デイ・フォー・ナイト）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_matrix.png:
+        content: "東京の夜景（マトリックス風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_amelie.png:
+        content: "東京の夜景（アメリ風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_mad_max.png:
+        content: "東京の夜景（マッドマックス風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_blade_runner.png:
+        content: "東京の夜景（ブレードランナー風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_sin_city.png:
+        content: "東京の夜景（シン・シティ風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_grand_budapest.png:
+        content: "東京の夜景（グランド・ブダペスト・ホテル風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_neon.png:
+        content: "東京の夜景（ネオンカラー）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_pastel.png:
+        content: "東京の夜景（パステルカラー）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_watercolor.png:
+        content: "東京の夜景（水彩画風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_oil_painting.png:
+        content: "東京の夜景（油絵風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_anime.png:
+        content: "東京の夜景（アニメ風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_comic.png:
+        content: "東京の夜景（コミックブック風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_pixel_art.png:
+        content: "東京の夜景（ドット絵風）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
+      tokyo_night_glitch.png:
+        content: "東京の夜景（グリッチアート）。"
+        dependency: []
+        agent: "lumalabs-photon-1"
+        api: []
