@@ -312,20 +312,16 @@ export const styles = [
         description: "厚塗り、質感。",
         image: "/images/tokyo_night_other_oil_painting.jpg",
       },
+
       {
-        name: "アニメ風",
-        children: [
-          {
-            name: "ジブリ風",
-            description: "手描き、水彩背景、自然。",
-            image: "/images/tokyo_night_other_anime_ghibli.jpg",
-          },
-          {
-            name: "セル画風",
-            description: "輪郭線、影。",
-            image: "/images/tokyo_night_other_anime_cel_shaded.jpg",
-          },
-        ]
+        name: "アニメ風：ジブリ風",
+        description: "手描き、水彩背景、自然。",
+        image: "/images/tokyo_night_other_anime_ghibli.jpg",
+      },
+      {
+        name: "アニメ風：セル画風",
+        description: "輪郭線、影。",
+        image: "/images/tokyo_night_other_anime_cel_shaded.jpg",
       },
       {
         name: "コミックブック風",
@@ -333,19 +329,14 @@ export const styles = [
         image: "/images/tokyo_night_other_comic_book.jpg",
       },
       {
-        name: "ゲーム風",
-        children: [
-          {
-            name: "ドット絵風",
-            description: "低解像度、レトロ。",
-            image: "/images/tokyo_night_other_game_pixel_art.jpg",
-          },
-          {
-            name: "ローポリ風",
-            description: "カクカクした3D。",
-            image: "/images/tokyo_night_other_game_low_poly.jpg",
-          },
-        ]
+        name: "ゲーム風：ドット絵風",
+        description: "低解像度、レトロ。",
+        image: "/images/tokyo_night_other_game_pixel_art.jpg",
+      },
+      {
+        name: "ゲーム風：ローポリ風",
+        description: "カクカクした3D。",
+        image: "/images/tokyo_night_other_game_low_poly.jpg",
       },
       {
         name: "グリッチアート",
