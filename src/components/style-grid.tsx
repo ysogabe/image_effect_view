@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface Style {
   name: string;
@@ -87,46 +88,63 @@ export default function StyleGrid({ styles }: StyleGridProps) {
   return (
     <div className="relative">
       <div className="py-8">
-        {Object.entries(styles).map(([category, stylesInCategory]) => (
-          <div key={category} className="mb-12">
-            <h2 className="text-4xl font-bold mb-6 text-futuristic-accent">{category}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.entries(stylesInCategory).map(([styleName, style]) => (
-                <div 
-                  key={styleName} 
-                  className="cursor-pointer animate-fadeIn"
-                  onClick={() => handleCardClick(style)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleCardClick(style);
-                    }
-                  }}
-                >
-                  <Card className="futuristic-card group hover:shadow-accent transition-all duration-500 h-full overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1">
-                    <CardHeader>
-                      <CardTitle className="futuristic-title group-hover:text-futuristic-neon transition-colors duration-500">{style.name}</CardTitle>
-                      <CardDescription className="text-sm text-gray-400 transition-opacity duration-500 group-hover:opacity-80">{style.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <div className="relative aspect-video overflow-hidden">
-                        <Image
-                          src={style.image}
-                          alt={style.name}
-                          fill
-                          className="object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-110"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+        <Tabs defaultValue={Object.keys(styles)[0]} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            {Object.keys(styles).map((category) => (
+              <TabsTrigger 
+                key={category} 
+                value={category}
+                className="text-xl font-semibold data-[state=active]:text-futuristic-neon data-[state=active]:shadow-neon transition-all duration-300"
+              >
+                {category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {Object.entries(styles).map(([category, stylesInCategory]) => (
+            <TabsContent 
+              key={category} 
+              value={category}
+              className="animate-fadeIn"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Object.entries(stylesInCategory).map(([styleName, style]) => (
+                  <div 
+                    key={styleName} 
+                    className="cursor-pointer animate-fadeIn"
+                    onClick={() => handleCardClick(style)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleCardClick(style);
+                      }
+                    }}
+                  >
+                    <Card className="futuristic-card group hover:shadow-accent transition-all duration-500 h-full overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1">
+                      <CardHeader>
+                        <CardTitle className="futuristic-title group-hover:text-futuristic-neon transition-colors duration-500">{style.name}</CardTitle>
+                        <CardDescription className="text-sm text-gray-400 transition-opacity duration-500 group-hover:opacity-80">{style.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="relative aspect-video overflow-hidden">
+                          <Image
+                            src={style.image}
+                            alt={style.name}
+                            fill
+                            className="object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-110"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
 
       {selectedStyle && (
