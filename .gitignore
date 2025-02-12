@@ -1,18 +1,23 @@
 # dependencies
 /node_modules
+/src/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
 # testing
 /coverage
+/src/coverage
 
 # next.js
 /.next/
+/src/.next/
 /out/
+/src/out/
 
 # production
 /build
+/src/build
 
 # misc
 .DS_Store
@@ -22,16 +27,23 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+/src/npm-debug.log*
+/src/yarn-debug.log*
+/src/yarn-error.log*
 
 # local env files
 .env*.local
+/src/.env*.local
 
 # vercel
 .vercel
+/src/.vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/src/*.tsbuildinfo
+/src/next-env.d.ts
 
 # project specific
 src/package-lock.json
