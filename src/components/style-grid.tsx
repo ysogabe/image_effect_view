@@ -9,10 +9,9 @@ import { StyleCategory, movieStyles, getStyleById } from '@/lib/styles';
 const flattenStyles = (styles: StyleCategory[]): StyleCategory[] => {
   let result: StyleCategory[] = [];
   for (const style of styles) {
-    if (!style.subcategories) {
-      result.push(style);
-    } else {
-      result = result.concat(flattenStyles(style.subcategories));
+    result.push(style);
+    if (style.children) {
+      result = result.concat(flattenStyles(style.children.filter((child): child is StyleCategory => 'children' in child)));
     }
   }
   return result;
@@ -30,13 +29,13 @@ export default function StyleGrid() {
     
     const searchTerms = query.toLowerCase().split(/\s+/);
     return styles.filter(style => {
-      const content = `${style.name} ${style.description}`.toLowerCase();
+      const content = `${style.name} ${style.description || ''} ${style.category}`.toLowerCase();
       return searchTerms.every(term => content.includes(term));
     });
   }, []);
 
   const handleCardClick = useCallback((style: StyleCategory) => {
-    if (style.subcategories) {
+    if (style.children?.some(child => 'children' in child)) {
       setCurrentPath(prev => [...prev, style.id]);
     } else {
       setSelectedStyle(style);
@@ -71,8 +70,8 @@ export default function StyleGrid() {
     let current = movieStyles;
     for (const id of path) {
       const found = current.find(style => style.id === id);
-      if (found?.subcategories) {
-        current = found.subcategories;
+      if (found?.children?.some(child => 'children' in child)) {
+        current = found.children.filter((child): child is StyleCategory => 'children' in child);
       } else {
         return [];
       }
@@ -88,8 +87,8 @@ export default function StyleGrid() {
       const found = current.find(style => style.id === id);
       if (found) {
         result.push({ id: found.id, name: found.name });
-        if (found.subcategories) {
-          current = found.subcategories;
+        if (found.children?.some(child => 'children' in child)) {
+          current = found.children.filter((child): child is StyleCategory => 'children' in child);
         }
       }
     }
@@ -205,7 +204,7 @@ export default function StyleGrid() {
                 <CardHeader>
                   <CardTitle className="futuristic-title group-hover:text-futuristic-neon transition-colors duration-500">
                     {style.name}
-                    {style.subcategories && (
+                    {style.children?.some(child => 'children' in child) && (
                       <span className="ml-2 text-sm text-gray-400">(サブカテゴリ)</span>
                     )}
                   </CardTitle>
@@ -215,13 +214,15 @@ export default function StyleGrid() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="relative aspect-video overflow-hidden">
-                    <Image
-                      src={style.imagePath}
-                      alt={style.name}
-                      fill
-                      className="object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-110"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
+                    {style.image && (
+                      <Image
+                        src={style.image}
+                        alt={style.name}
+                        fill
+                        className="object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-110"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -263,7 +264,7 @@ export default function StyleGrid() {
               {/* Image */}
               <div className="relative aspect-[16/9] rounded-lg overflow-hidden">
                 <Image
-                  src={selectedStyle.imagePath}
+                  src={selectedStyle.image || ''}
                   alt={selectedStyle.name}
                   fill
                   className="object-contain"
