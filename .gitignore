@@ -51,3 +51,4 @@ src/package-lock.json
 .next/
 src/.next/
 src/node_modules/
+src/public/images/bk/
